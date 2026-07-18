@@ -29,7 +29,7 @@ Works the same on Windows and Mac: drop the folder in Scripts, load the action.
 1. Get the `Reaper-LTC-Markers` folder (USB copy, clone, or download).
 2. Ensure the helper for your OS is in `native/bin/` ([CI artifacts](#native-helper-binaries-ci)):
    - Windows: `ltc_scan.exe`
-   - macOS: `ltc_scan` (then `chmod +x` — see [INSTALL.md](INSTALL.md))
+   - macOS: `ltc_scan` (script auto-sets executable; see [INSTALL.md](INSTALL.md) if blocked)
 3. Copy the whole folder into your REAPER Scripts directory.
 4. In REAPER: **Actions → Show action list → Load ReaScript…**  
    → `scripts/Reaper LTC Markers - Process.lua`

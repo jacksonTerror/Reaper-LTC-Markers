@@ -29,16 +29,20 @@ Then download the helper for your OS from CI (step 2), unless you build locally.
 
 Windows `.exe` does **not** run on Mac. Keep the Mac binary named `ltc_scan` (no `.exe`).
 
-### macOS: make the helper executable (`chmod +x`)
+### macOS: executable bit (`chmod +x`)
 
-Required once after copying the binary (GitHub/USB copies often lose the execute bit).
+Finder does **not** have a simple “make executable” option for this kind of file.
+
+**Usually you can skip Terminal:** when you run **Process**, the script tries to set `chmod +x` on the helper automatically (USB/Windows copies often lose that bit).
+
+If the helper still won’t start, set it manually once:
 
 1. Open **Terminal** on the Mac.
 2. Type `chmod +x ` (include the trailing space).
 3. Drag `ltc_scan` from Finder (`Reaper-LTC-Markers/native/bin/ltc_scan`, or `native/bin/macos/ltc_scan`) into the Terminal window so the full path appears.
 4. Press **Return**.
 
-Or, if the Terminal’s current directory is the project folder:
+Or from the project folder:
 
 ```bash
 chmod +x native/bin/ltc_scan
@@ -47,13 +51,13 @@ chmod +x native/bin/macos/ltc_scan
 
 ### macOS: Gatekeeper (first run)
 
-If macOS says the app can’t be opened because it isn’t from an identified developer:
+This is separate from `chmod`. If macOS blocks an unidentified developer:
 
 1. In Finder, right-click (or Control-click) `ltc_scan`
 2. Choose **Open**
 3. Confirm **Open** in the dialog  
 
-After that once, REAPER should be able to launch it normally.
+That Finder **Open** step is the closest thing to “doing it from the file” — it clears Gatekeeper quarantine, not the execute bit. After once, REAPER should launch the helper normally.
 
 ## 3. Copy into REAPER
 
@@ -97,7 +101,7 @@ Edit in Excel / Google Docs, or use **Edit mapping…** inside the Process setti
 | Symptom | Likely fix |
 |---|---|
 | Helper did not start | Wrong/missing helper for this OS; on Mac don’t use `.exe` |
-| Helper did not start (Mac) | Run `chmod +x` on `ltc_scan`; try right-click → **Open** once |
+| Helper did not start (Mac) | Script auto-`chmod`s on run; if needed, Terminal `chmod +x`; try right-click → **Open** once (Gatekeeper) |
 | No markers / few markers | Try Auto gain or +6/+12 dB; confirm FPS; confirm CSV codes |
 | “Not a RIFF/WAV” | Consolidate/bounce the LTC take to WAV |
 

@@ -211,6 +211,10 @@ function M.start_helper_async(opts)
   log_launch(paths, "helper=" .. helper)
   log_launch(paths, "cmdline=" .. cmdline)
 
+  -- macOS/Linux: set +x automatically (Finder can't; USB copies often lose it)
+  rlm_os.ensure_executable(helper)
+  log_launch(paths, "ensure_executable done")
+
   local result, err = rlm_os.spawn_detached(cmdline, paths)
   if err then
     return nil, err

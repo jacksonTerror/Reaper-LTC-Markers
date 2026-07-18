@@ -27,6 +27,20 @@ local function sh_quote(s)
   return "'" .. tostring(s):gsub("'", "'\\''") .. "'"
 end
 
+--- Ensure the helper is executable on macOS/Linux.
+--- USB/Windows copies often lose the Unix +x bit; Finder has no simple toggle.
+function M.ensure_executable(helper_path)
+  if M.is_windows() then
+    return true
+  end
+  if not helper_path or helper_path == "" then
+    return false
+  end
+  -- chmod +x; ignore failure (Gatekeeper is a separate issue)
+  reaper.ExecProcess("/bin/chmod +x " .. sh_quote(helper_path), 3000)
+  return true
+end
+
 --- Build a shell-safe command line from helper path + arg list
 function M.build_cmdline(helper, args)
   if M.is_windows() then
