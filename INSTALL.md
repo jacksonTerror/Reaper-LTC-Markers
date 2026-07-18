@@ -46,7 +46,7 @@ Keep `native/bin/` inside the copy so the script can find the helper.
 1. REAPER → **Actions → Show action list…**
 2. **New action… / Load ReaScript…**
 3. Select `scripts/Reaper LTC Markers - Process.lua`
-4. (Optional) Load `scripts/Reaper LTC Markers - Edit Mapping.lua` — requires [ReaImGui](https://github.com/cfillion/reaimgui) via [ReaPack](https://reapack.com/)
+4. (Optional) Load `scripts/Reaper LTC Markers - Edit Mapping.lua` — stock REAPER gfx, no extra installs
 
 Bind a shortcut or toolbar button if you like.
 

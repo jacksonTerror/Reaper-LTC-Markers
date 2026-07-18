@@ -1,5 +1,5 @@
 -- @description Reaper LTC Markers - Process
--- @version 0.3.0
+-- @version 0.4.0
 -- @author Reaper LTC Markers
 -- @about
 --   Scan selected LTC/SMPTE item, match CSV mapping, insert project markers.
@@ -18,80 +18,12 @@ local suggest = require("rlm_track_suggest")
 local scan = require("rlm_scan")
 local markers = require("rlm_markers")
 local report = require("rlm_report")
+local settings_ui = require("rlm_settings_ui")
 
 local state = nil
 
 local function msg(title, text)
   reaper.ShowMessageBox(text, title, 0)
-end
-
-local function browse_csv(current)
-  local start = current
-  if not start or start == "" then
-    start = path_util.template_csv_path()
-  end
-  local rv, path = reaper.GetUserFileNameForRead(start, "Select SMPTE mapping CSV", ".csv")
-  if rv and path and path ~= "" then
-    return path
-  end
-  return current
-end
-
-local function prompt_settings(cfg)
-  local csv_path = cfg.csv_path or ""
-  if csv_path == "" or not reaper.file_exists(csv_path) then
-    csv_path = browse_csv(path_util.template_csv_path())
-    if not csv_path or csv_path == "" then
-      return nil
-    end
-  else
-    local pick = reaper.ShowMessageBox(
-      "Use this mapping CSV?\n\n" .. csv_path .. "\n\nYes = use it\nNo = choose another",
-      "Reaper LTC Markers",
-      4
-    )
-    if pick == 7 then
-      csv_path = browse_csv(csv_path)
-      if not csv_path or csv_path == "" then
-        return nil
-      end
-    end
-  end
-
-  local captions = "FPS (24/25/29.97/30),Gain mode (auto/manual),Gain dB (0/6/12/18),Mode (replace/append)"
-  local defaults = table.concat({
-    cfg.fps or "30",
-    cfg.gain_mode or "auto",
-    cfg.gain_db or "0",
-    cfg.mode or "replace",
-  }, ",")
-
-  local ok, values = reaper.GetUserInputs("Reaper LTC Markers — Settings", 4, captions, defaults)
-  if not ok then
-    return nil
-  end
-
-  local fps, gain_mode, gain_db, mode = values:match("([^,]*),([^,]*),([^,]*),(.*)")
-  fps = (fps or "30"):gsub("%s+", "")
-  gain_mode = (gain_mode or "auto"):lower():gsub("%s+", "")
-  gain_db = (gain_db or "0"):gsub("%s+", "")
-  mode = (mode or "replace"):lower():gsub("%s+", "")
-
-  if gain_mode ~= "auto" and gain_mode ~= "manual" then
-    gain_mode = "auto"
-  end
-  if mode ~= "replace" and mode ~= "append" then
-    mode = "replace"
-  end
-
-  return {
-    csv_path = csv_path,
-    fps = fps,
-    gain_mode = gain_mode,
-    gain_db = gain_db,
-    mode = mode,
-    tolerance_frames = cfg.tolerance_frames or "3",
-  }
 end
 
 local function format_min(sec)
@@ -202,7 +134,6 @@ local function draw_progress()
     gfx.drawstr(string.format("%s  Starting…   %.1fs", spin, elapsed))
   end
 
-  -- progress bar
   local bx, by, bw, bh = 16, 62, w - 32, 16
   gfx.set(0.20, 0.22, 0.26, 1)
   gfx.rect(bx, by, bw, bh, 1)
@@ -213,7 +144,6 @@ local function draw_progress()
   end
   gfx.rect(bx, by, fill, bh, 1)
 
-  -- live find log (like the desktop app)
   gfx.set(0.70, 0.72, 0.76, 1)
   gfx.setfont(1, "Arial", 12)
   gfx.x, gfx.y = 16, 92
@@ -254,7 +184,7 @@ local function poll()
     return
   end
 
-  gfx.getchar() -- keep window alive / process close
+  gfx.getchar()
   draw_progress()
 
   if scan.job_finished(state.job) then
@@ -262,7 +192,6 @@ local function poll()
     return
   end
 
-  -- If helper never starts, offer a blocking fallback with diagnostics
   if reaper.time_precise() - state.t0 > 10 and not scan.helper_seems_alive(state.job) then
     local saved = state
     local diag = scan.launch_diagnostics(saved.job)
@@ -277,7 +206,7 @@ local function poll()
       "Reaper LTC Markers",
       4
     )
-    if choice == 6 then -- Yes
+    if choice == 6 then
       reaper.ExecProcess(saved.job.cmdline, 0)
       state = saved
       finish_scan()
@@ -295,18 +224,7 @@ local function poll()
   reaper.defer(poll)
 end
 
-local function run()
-  local cfg = config.load_all()
-  local track, item, note = suggest.suggest()
-  if not item then
-    msg("Reaper LTC Markers", note or "Select an LTC/SMPTE media item first.")
-    return
-  end
-
-  local settings = prompt_settings(cfg)
-  if not settings then
-    return
-  end
+local function start_scan(item, note, settings)
   config.save_all(settings)
 
   local rows = csv.load(settings.csv_path)
@@ -332,7 +250,6 @@ local function run()
     fps_num = math.floor(fps_num + 0.5)
   end
 
-  -- Open status window FIRST so something visible is up before launch
   gfx.init("Reaper LTC Markers — Scanning", 520, 320, 0, 180, 160)
   gfx.setfont(1, "Arial", 14)
   gfx.set(0.11, 0.12, 0.14, 1)
@@ -367,6 +284,22 @@ local function run()
   }
 
   reaper.defer(poll)
+end
+
+local function run()
+  local cfg = config.load_all()
+  local track, item, note = suggest.suggest()
+  if not item then
+    msg("Reaper LTC Markers", note or "Select an LTC/SMPTE media item first.")
+    return
+  end
+
+  settings_ui.prompt(cfg, function(settings)
+    if not settings then
+      return
+    end
+    start_scan(item, note, settings)
+  end)
 end
 
 reaper.defer(run)

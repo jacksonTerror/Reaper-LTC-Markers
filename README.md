@@ -7,7 +7,7 @@ Cross-platform ReaScript workflow (Windows + macOS). Same mapping format as [REA
 ## Features
 
 - Select an LTC/SMPTE media item (or auto-suggest a track named SMPTE/LTC)
-- CSV mapping: `SMPTE Code,Marker Name` (edit in Excel, Google Docs, or the optional ReaImGui editor)
+- CSV mapping: `SMPTE Code,Marker Name` (built-in gfx editor, or edit in Excel / Google Docs)
 - Auto gain (default) + manual boost for quiet timecode stripes
 - **Replace** or **Append** markers
 - Live progress UI with a running list of found markers
@@ -17,8 +17,7 @@ Cross-platform ReaScript workflow (Windows + macOS). Same mapping format as [REA
 
 | Layer | What | Cross-platform? |
 |---|---|---|
-| UI, settings, markers | REAPER Lua (`gfx`, Actions) | Yes |
-| Optional CSV editor | [ReaImGui](https://github.com/cfillion/reaimgui) via [ReaPack](https://reapack.com/) | Yes |
+| UI, settings, CSV editor, markers | REAPER Lua (`gfx`, Actions) — **no ReaImGui / ReaPack** | Yes |
 | LTC decode | Small native CLI `ltc_scan` ([libltc](https://github.com/x42/libltc)) | One binary per OS |
 
 Lua scripts are identical on every machine. Only `native/bin/ltc_scan` (macOS) / `ltc_scan.exe` (Windows) differs. Download both from **GitHub Actions → Artifacts** after a build.
