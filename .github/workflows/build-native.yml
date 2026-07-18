@@ -51,12 +51,18 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Build ltc_scan (macOS)
+      - name: Build ltc_scan (macOS universal)
         run: |
           set -e
           chmod +x native/build_mac.sh
           ./native/build_mac.sh
           ls -la native/bin/macos/ltc_scan
+          # Must include Intel (x86_64) and Apple Silicon (arm64)
+          archs="$(lipo -archs native/bin/macos/ltc_scan)"
+          echo "lipo -archs: $archs"
+          echo "$archs" | grep -q 'x86_64'
+          echo "$archs" | grep -q 'arm64'
+          file native/bin/macos/ltc_scan
 
       - uses: actions/upload-artifact@v4
         with:

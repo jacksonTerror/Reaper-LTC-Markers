@@ -29,6 +29,8 @@ Then download the helper for your OS from CI (step 2), unless you build locally.
 
 Windows `.exe` does **not** run on Mac. Keep the Mac binary named `ltc_scan` (no `.exe`).
 
+CI builds a **universal** Mac helper (`arm64` + `x86_64`) so the same file works on Apple Silicon and Intel Macs. If you see **bad CPU type in executable**, you have an old Silicon-only binary — download a fresh `ltc_scan-macos` artifact from Actions (after the universal build) and replace `native/bin/ltc_scan`.
+
 ### macOS: executable bit (`chmod +x`)
 
 Finder does **not** have a simple “make executable” option for this kind of file.
@@ -102,6 +104,7 @@ Edit in Excel / Google Docs, or use **Edit mapping…** inside the Process setti
 |---|---|
 | Helper did not start | Wrong/missing helper for this OS; on Mac don’t use `.exe` |
 | Helper did not start (Mac) | Script auto-`chmod`s on run; if needed, Terminal `chmod +x`; try right-click → **Open** once (Gatekeeper) |
+| `bad CPU type in executable` | Old arm64-only helper on an Intel Mac — replace with the universal CI `ltc_scan-macos` artifact |
 | No markers / few markers | Try Auto gain or +6/+12 dB; confirm FPS; confirm CSV codes |
 | “Not a RIFF/WAV” | Consolidate/bounce the LTC take to WAV |
 

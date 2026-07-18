@@ -7,9 +7,9 @@ Cross-platform C CLI that decodes LTC with [libltc](https://github.com/x42/liblt
 | Platform | Path |
 |---|---|
 | Windows | `bin/ltc_scan.exe` or `bin/windows/ltc_scan.exe` |
-| macOS | `bin/ltc_scan` or `bin/macos/ltc_scan` |
+| macOS | `bin/ltc_scan` or `bin/macos/ltc_scan` (universal: arm64 + x86_64) |
 
-Prefer downloading **GitHub Actions** artifacts (see root README). Windows `.exe` does not run on Mac.
+Prefer downloading **GitHub Actions** artifacts (see root README). Windows `.exe` does not run on Mac. The Mac build is a **universal** binary so Intel and Apple Silicon both work.
 
 ## Build
 
