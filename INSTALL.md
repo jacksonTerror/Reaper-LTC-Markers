@@ -31,35 +31,26 @@ Windows `.exe` does **not** run on Mac. Keep the Mac binary named `ltc_scan` (no
 
 CI builds a **universal** Mac helper (`arm64` + `x86_64`) so the same file works on Apple Silicon and Intel Macs. If you see **bad CPU type in executable**, you have an old Silicon-only binary — download a fresh `ltc_scan-macos` artifact from Actions (after the universal build) and replace `native/bin/ltc_scan`.
 
-### macOS: executable bit (`chmod +x`)
+### macOS: executable bit + Gatekeeper
 
-Finder does **not** have a simple “make executable” option for this kind of file.
+You are **not** missing a separate “install action” after copying the folder. When you hit **Process**, the script silently runs `chmod +x` and clears quarantine — there is no Terminal window or popup for that.
 
-**Usually you can skip Terminal:** when you run **Process**, the script tries to set `chmod +x` on the helper automatically (USB/Windows copies often lose that bit).
+If you see **Scan helper did not start in the background**, do this **once** in Finder (most common fix):
 
-If the helper still won’t start, set it manually once:
+1. Go to `…/Scripts/Reaper-LTC-Markers/native/bin/` (or `native/bin/macos/`)
+2. Right-click (Control-click) `ltc_scan` → **Open** → **Open**
+3. If a small Terminal window flashes usage text, that is fine — close it
+4. Run **Process** again in REAPER (or choose **Yes** for the blocking scan)
 
-1. Open **Terminal** on the Mac.
-2. Type `chmod +x ` (include the trailing space).
-3. Drag `ltc_scan` from Finder (`Reaper-LTC-Markers/native/bin/ltc_scan`, or `native/bin/macos/ltc_scan`) into the Terminal window so the full path appears.
-4. Press **Return**.
-
-Or from the project folder:
+**Manual `chmod` only if needed** — type the whole command on one line. Do **not** press Return until the path is there. Do **not** use `chmod +` (missing `x`).
 
 ```bash
-chmod +x native/bin/ltc_scan
-chmod +x native/bin/macos/ltc_scan
+chmod +x /full/path/to/ltc_scan
 ```
 
-### macOS: Gatekeeper (first run)
+Or: type `chmod +x ` (space after `x`, **no** Return yet) → drag `ltc_scan` into Terminal → Return.
 
-This is separate from `chmod`. If macOS blocks an unidentified developer:
-
-1. In Finder, right-click (or Control-click) `ltc_scan`
-2. Choose **Open**
-3. Confirm **Open** in the dialog  
-
-That Finder **Open** step is the closest thing to “doing it from the file” — it clears Gatekeeper quarantine, not the execute bit. After once, REAPER should launch the helper normally.
+If you drop `ltc_scan` into Terminal alone and press Return, macOS **runs** the helper (looks like “the app opened”). That is not chmod.
 
 ## 3. Copy into REAPER
 

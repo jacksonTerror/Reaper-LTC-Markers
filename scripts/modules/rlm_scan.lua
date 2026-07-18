@@ -211,9 +211,9 @@ function M.start_helper_async(opts)
   log_launch(paths, "helper=" .. helper)
   log_launch(paths, "cmdline=" .. cmdline)
 
-  -- macOS/Linux: set +x automatically (Finder can't; USB copies often lose it)
-  rlm_os.ensure_executable(helper)
-  log_launch(paths, "ensure_executable done")
+  -- macOS/Linux: set +x + clear quarantine (silent; no Finder UI)
+  local ok, chmod_out = rlm_os.ensure_executable(helper)
+  log_launch(paths, "ensure_executable ok=" .. tostring(ok) .. " out=" .. tostring(chmod_out))
 
   local result, err = rlm_os.spawn_detached(cmdline, paths)
   if err then

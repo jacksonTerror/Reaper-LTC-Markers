@@ -27,8 +27,9 @@ local function sh_quote(s)
   return "'" .. tostring(s):gsub("'", "'\\''") .. "'"
 end
 
---- Ensure the helper is executable on macOS/Linux.
---- USB/Windows copies often lose the Unix +x bit; Finder has no simple toggle.
+--- Ensure the helper is executable on macOS/Linux and clear Gatekeeper quarantine.
+--- USB/Windows copies often lose +x and pick up com.apple.quarantine.
+--- Silent — no UI; results go to the caller's launch log if they capture ExecProcess.
 function M.ensure_executable(helper_path)
   if M.is_windows() then
     return true
@@ -36,9 +37,16 @@ function M.ensure_executable(helper_path)
   if not helper_path or helper_path == "" then
     return false
   end
-  -- chmod +x; ignore failure (Gatekeeper is a separate issue)
-  reaper.ExecProcess("/bin/chmod +x " .. sh_quote(helper_path), 3000)
-  return true
+  local q = sh_quote(helper_path)
+  -- chmod +x, then strip quarantine so REAPER can launch without a prior Finder Open
+  local cmd = "/bin/sh -c " .. sh_quote(
+    "/bin/chmod +x " .. q
+      .. "; /usr/bin/xattr -cr " .. q .. " 2>/dev/null"
+      .. "; /usr/bin/xattr -d com.apple.quarantine " .. q .. " 2>/dev/null"
+      .. "; /bin/ls -lO " .. q .. " 2>/dev/null || /bin/ls -l " .. q
+  )
+  local result = reaper.ExecProcess(cmd, 8000)
+  return true, result
 end
 
 --- Build a shell-safe command line from helper path + arg list
@@ -95,8 +103,11 @@ function M.spawn_detached(cmdline, paths)
     return result, nil
   end
 
-  -- macOS / Linux: background with shell. ExecProcess returns when the shell exits.
-  local inner = cmdline .. " >/dev/null 2>&1 &"
+  -- macOS / Linux: detach with nohup so ExecProcess/timeout cannot kill the helper.
+  -- Append stdout/stderr to the launch log (never /dev/null — we need Gatekeeper errors).
+  local log = paths.log
+  local redirect = log and (" >> " .. sh_quote(log) .. " 2>&1") or " >/dev/null 2>&1"
+  local inner = "/usr/bin/nohup " .. cmdline .. redirect .. " &"
   local launch = "/bin/sh -c " .. sh_quote(inner)
   local result = reaper.ExecProcess(launch, 5000)
   return result, nil

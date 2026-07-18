@@ -198,10 +198,19 @@ local function poll()
     state = nil
     gfx.quit()
 
+    local mac_hint = ""
+    if reaper.GetOS():find("OSX") or reaper.GetOS():find("macOS") then
+      mac_hint = "\n\nMac tip: auto chmod/quarantine clear is silent (no Terminal window).\n"
+        .. "If this keeps failing: Finder → right-click ltc_scan → Open → Open.\n"
+        .. "Manual chmod (type exactly, include the x, press Return only after the path):\n"
+        .. "  chmod +x /path/to/ltc_scan\n"
+    end
     local choice = reaper.ShowMessageBox(
       "Scan helper did not start in the background.\n\n"
         .. "YES = run blocking scan (REAPER may freeze briefly, but markers will be placed)\n"
-        .. "NO = cancel\n\n"
+        .. "NO = cancel"
+        .. mac_hint
+        .. "\n\n"
         .. diag,
       "Reaper LTC Markers",
       4
