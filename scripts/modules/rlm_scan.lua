@@ -131,6 +131,7 @@ function M.job_paths()
     progress = path_util.join(res, "ReaperLTCMarkers_progress.txt"),
     done = path_util.join(res, "ReaperLTCMarkers_done.txt"),
     vbs = path_util.join(res, "ReaperLTCMarkers_run.vbs"),
+    sh = path_util.join(res, "ReaperLTCMarkers_run.sh"),
     log = path_util.join(res, "ReaperLTCMarkers_launch.log"),
   }
 end

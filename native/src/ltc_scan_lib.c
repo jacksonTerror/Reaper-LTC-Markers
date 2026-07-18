@@ -215,15 +215,19 @@ static int open_wav(const char *path, Wav *w, FILE *log) {
   return 0;
 }
 
-/* Read mono floats at source rate (first channel only). */
+/* Read mono floats at source rate.
+ * Multi-channel: keep the sample with largest |amp| so LTC on right/other
+ * channels still decodes (stereo SMPTE strips often put LTC on ch 2). */
 static long read_mono_src(Wav *w, float *dst, long frames) {
   long i, n = 0;
   int ch = w->channels;
   for (i = 0; i < frames; i++) {
-    float mono = 0.f;
+    float best = 0.f;
+    float best_abs = -1.f;
     int c;
     for (c = 0; c < ch; c++) {
       float s = 0.f;
+      float a;
       if (w->is_float || w->bits == 32) {
         float v;
         if (fread(&v, 4, 1, w->f) != 1) return n;
@@ -240,9 +244,13 @@ static long read_mono_src(Wav *w, float *dst, long frames) {
         if (v & 0x800000) v |= ~0xFFFFFF;
         s = v / 8388608.f;
       }
-      if (c == 0) mono = s;
+      a = s < 0.f ? -s : s;
+      if (a > best_abs) {
+        best_abs = a;
+        best = s;
+      }
     }
-    dst[n++] = mono;
+    dst[n++] = best;
   }
   return n;
 }

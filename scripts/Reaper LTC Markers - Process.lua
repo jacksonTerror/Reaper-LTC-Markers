@@ -54,7 +54,23 @@ local function finish_scan()
     if logs and #logs > 0 then
       extra = "\n\nHelper log:\n" .. table.concat(logs, "\n")
     end
-    report.write({
+    local unmapped_n = unmapped and #unmapped or 0
+    local sample = ""
+    if unmapped_n > 0 then
+      local lines = {}
+      for i = 1, math.min(8, unmapped_n) do
+        lines[#lines + 1] = "  " .. (unmapped[i].timecode or "?")
+      end
+      sample = "\n\nLTC was heard but did not match the CSV ("
+        .. tostring(unmapped_n) .. " sample codes):\n"
+        .. table.concat(lines, "\n")
+        .. "\n→ Update the mapping CSV to those codes (or check FPS)."
+    else
+      sample = "\n\nNo LTC frames decoded (or none in range).\n"
+        .. "→ Audio must be WAV (not AIFF/MP3); try Auto gain / +6–12 dB;\n"
+        .. "→ Confirm the selected item is the SMPTE/LTC track."
+    end
+    local report_path = report.write({
       matches = {},
       unmapped = unmapped,
       fps = s.settings.fps,
@@ -67,11 +83,12 @@ local function finish_scan()
     })
     msg(
       "Reaper LTC Markers",
-      "No mapped markers found.\n\n"
-        .. "Tips:\n"
-        .. "• Try Auto gain or +6 / +12 dB\n"
-        .. "• Confirm FPS matches the LTC\n"
-        .. "• Confirm CSV codes match the tape"
+      "No mapped markers found.\n"
+        .. sample
+        .. "\n\nCSV:\n" .. tostring(s.settings.csv_path)
+        .. "\nAudio:\n" .. tostring(s.resolved.path)
+        .. "\nScan log:\n" .. tostring(s.job.paths.out)
+        .. (report_path and ("\nReport:\n" .. report_path) or "")
         .. extra
     )
     return

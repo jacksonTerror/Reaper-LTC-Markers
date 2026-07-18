@@ -81,7 +81,7 @@ local function write_file(path, body)
 end
 
 --- Detach-launch cmdline so REAPER's UI thread is not blocked.
---- paths: { vbs=, log= } used on Windows; ignored elsewhere.
+--- paths: { vbs=, sh=, log= } — Windows uses .vbs; macOS/Linux uses .sh
 function M.spawn_detached(cmdline, paths)
   paths = paths or {}
 
@@ -103,12 +103,24 @@ function M.spawn_detached(cmdline, paths)
     return result, nil
   end
 
-  -- macOS / Linux: detach with nohup so ExecProcess/timeout cannot kill the helper.
-  -- Append stdout/stderr to the launch log (never /dev/null — we need Gatekeeper errors).
-  local log = paths.log
-  local redirect = log and (" >> " .. sh_quote(log) .. " 2>&1") or " >/dev/null 2>&1"
-  local inner = "/usr/bin/nohup " .. cmdline .. redirect .. " &"
-  local launch = "/bin/sh -c " .. sh_quote(inner)
+  -- macOS / Linux: write a tiny launcher script (same idea as Windows VBS).
+  -- Inline `sh -c '… &'` is unreliable under REAPER's ExecProcess on Mac.
+  if not paths.sh then
+    return nil, "Missing shell launcher path"
+  end
+  local log = paths.log or "/dev/null"
+  local body = table.concat({
+    "#!/bin/sh",
+    "cd / || true",
+    "nohup " .. cmdline .. " >> " .. sh_quote(log) .. " 2>&1 &",
+    "exit 0",
+    "",
+  }, "\n")
+  if not write_file(paths.sh, body) then
+    return nil, "Could not write " .. paths.sh
+  end
+  reaper.ExecProcess("/bin/chmod +x " .. sh_quote(paths.sh), 3000)
+  local launch = "/bin/sh " .. sh_quote(paths.sh)
   local result = reaper.ExecProcess(launch, 5000)
   return result, nil
 end
