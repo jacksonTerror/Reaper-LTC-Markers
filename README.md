@@ -24,13 +24,17 @@ Lua scripts are identical on every machine. Only `native/bin/ltc_scan` (macOS) /
 
 ## Quick install
 
-1. Clone this repo (with submodules) **or** download a release/folder copy.
-2. Put `ltc_scan` / `ltc_scan.exe` in `native/bin/` (from [CI artifacts](#native-helper-binaries-ci)).
-3. Copy the whole `Reaper-LTC-Markers` folder into your REAPER Scripts directory.
+Works the same on Windows and Mac: drop the folder in Scripts, load the action.
+
+1. Get the `Reaper-LTC-Markers` folder (USB copy, clone, or download).
+2. Ensure the helper for your OS is in `native/bin/` ([CI artifacts](#native-helper-binaries-ci)):
+   - Windows: `ltc_scan.exe`
+   - macOS: `ltc_scan` (then `chmod +x` — see [INSTALL.md](INSTALL.md))
+3. Copy the whole folder into your REAPER Scripts directory.
 4. In REAPER: **Actions → Show action list → Load ReaScript…**  
    → `scripts/Reaper LTC Markers - Process.lua`
 
-Details: [INSTALL.md](INSTALL.md)
+Full steps (including Mac Terminal `chmod +x` and Gatekeeper): **[INSTALL.md](INSTALL.md)**
 
 ## Workflow
 
@@ -58,9 +62,9 @@ This repo includes a GitHub Action that builds Windows + macOS helpers **without
 2. Run workflow (**Run workflow**), or push a change under `native/`
 3. Download artifacts:
    - `ltc_scan-windows` → place as `native/bin/ltc_scan.exe`
-   - `ltc_scan-macos` → place as `native/bin/ltc_scan` (then `chmod +x` on Mac)
+   - `ltc_scan-macos` → place as `native/bin/ltc_scan` and/or `native/bin/macos/ltc_scan`
 
-First launch on macOS may require Gatekeeper: right-click → Open.
+On macOS, make it executable once (`chmod +x`) and approve Gatekeeper if prompted — step-by-step in [INSTALL.md](INSTALL.md#macos-make-the-helper-executable-chmod-x).
 
 ### Local build (optional)
 
