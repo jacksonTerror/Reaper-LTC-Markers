@@ -1,0 +1,64 @@
+# Builds the LTC helper for Windows + macOS (no local Mac required).
+name: Build native helpers
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+    paths:
+      - "native/**"
+      - "libltc/src/**"
+      - ".github/workflows/build-native.yml"
+  pull_request:
+    paths:
+      - "native/**"
+      - "libltc/src/**"
+      - ".github/workflows/build-native.yml"
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build ltc_scan.exe
+        run: |
+          set -e
+          mkdir -p native/bin/windows
+          gcc -O2 -std=c11 -mwindows \
+            -Inative/include -Ilibltc/src \
+            native/src/ltc_scan_lib.c native/src/ltc_scan_cli.c \
+            libltc/src/ltc.c libltc/src/decoder.c \
+            libltc/src/encoder.c libltc/src/timecode.c \
+            -o native/bin/windows/ltc_scan.exe
+          cp native/bin/windows/ltc_scan.exe native/bin/ltc_scan.exe
+          ls -la native/bin/windows/ltc_scan.exe
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ltc_scan-windows
+          path: native/bin/windows/ltc_scan.exe
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build ltc_scan (macOS)
+        run: |
+          set -e
+          chmod +x native/build_mac.sh
+          ./native/build_mac.sh
+          ls -la native/bin/macos/ltc_scan
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ltc_scan-macos
+          path: native/bin/macos/ltc_scan

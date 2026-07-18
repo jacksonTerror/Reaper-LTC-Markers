@@ -1,0 +1,20 @@
+# Native build outputs (download from GitHub Actions Artifacts)
+native/bin/*.exe
+native/bin/ltc_scan
+native/bin/windows/
+native/bin/macos/
+native/bin/*.dll
+native/bin/*.dylib
+!native/bin/.gitkeep
+
+*.o
+*.obj
+.DS_Store
+Thumbs.db
+
+# Local scan leftovers if someone runs helper from the repo
+ReaperLTCMarkers_*.txt
+ReaperLTCMarkers_*.vbs
+ReaperLTCMarkers_*.cmd
+ReaperLTCMarkers_*.ps1
+ReaperLTCMarkers_*.log
